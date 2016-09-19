@@ -3,8 +3,8 @@ nanoseq is nano size sequencer for Arduboy ( https://www.arduboy.com/ )
 
 ## screen
 ![screenshot](imgs/nanoseq.jpg)
-Horizontal lines means each 8 beats.
-Vertical lines means each 1 octaves.
+- Vertical lines means each 8 beats.
+- Horizontal lines means each 1 octaves.
 
 ## how to use
 - Move cursor
