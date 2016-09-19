@@ -12,6 +12,6 @@ nanoseq is nano size sequencer for Arduboy ( https://www.arduboy.com/ )
 - Set tone at cursor position
   - A button
 - Play music
-  - Move cursor at the most left side and press left button.
+  - Move cursor at the most left side and press right button.
 
 
