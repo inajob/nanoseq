@@ -12,17 +12,22 @@ http://opensource.org/licenses/mit-license.php
 Arduboy arduboy;
 #define M_TITLE 0
 #define M_GAME 1
+
+#define XSIZE 2
+#define YSIZE 2
+
 byte mode = 0;
+byte scoreMap[WIDTH/XSIZE];
 
 void setup() {
   arduboy.begin();
   arduboy.setFrameRate(60);
   arduboy.display();
+  for(int i = 0; i < WIDTH/XSIZE; i ++){
+    scoreMap[i] = 0xff;
+  }
 }
 
-#define XSIZE 2
-#define YSIZE 2
-int scoreMap[WIDTH/XSIZE];
 
 void title(){
   arduboy.clear();
@@ -44,7 +49,8 @@ const unsigned int PROGMEM _midi_word_note_frequencies[80] = {
 10548,11175,11840,12544,13290,14080,14917,15804,16744,17740,18795,19912,21096,
 22351,23680,25088 };
 
-const unsigned int PROGMEM space[] = {
+const byte PROGMEM space[] = {
+ 0xff,
   0, 2, 4, 5, 7, 9,11,
  12,14,16,17,19,21,23,
  24,26,28,29,31,33,35,
@@ -52,6 +58,16 @@ const unsigned int PROGMEM space[] = {
  48,50,52,53,55,57,59,
  60,62,64,65,67,69,71,
  72
+};
+#define SHARP(x) x | 0x80
+const byte PROGMEM revSpace[] = {
+  0, SHARP(0),
+  1, SHARP(1), 
+  2, 
+  3, SHARP(3), 
+  4, SHARP(4), 
+  5, SHARP(5), 
+  6
 };
 
 int x, y;
@@ -62,17 +78,18 @@ int downTrigger = 0;
 int leftTrigger = 0;
 int rightTrigger = 0;
 
-void checkA(){
+void checkA(byte diff){
   if(arduboy.pressed(A_BUTTON)){
-      scoreMap[x] = y;
+      scoreMap[x] = pgm_read_byte(space + y) + diff;
   }
 }
 
 void game(){
   arduboy.clear();
-  
-  arduboy.fillRect(x * XSIZE, (HEIGHT/YSIZE - y - 1) * YSIZE, XSIZE, YSIZE, 1);
 
+  // show cursor
+  arduboy.fillRect(x * XSIZE, (HEIGHT/YSIZE - y - 1) * YSIZE, XSIZE, YSIZE, (counter & 0b10)?1:0);
+  
   // show grid
   for(int j = 0; j < HEIGHT/YSIZE; j += 7){
     for(int i = 0; i < WIDTH/XSIZE; i += 2){
@@ -87,13 +104,25 @@ void game(){
 
   // show score
   for(int i = 0; i < WIDTH/XSIZE; i ++){
-    arduboy.fillRect(i * XSIZE, (HEIGHT/YSIZE - scoreMap[i] - 1) * YSIZE, XSIZE, YSIZE, 1);
+    byte ypos;
+    byte rev;
+    bool sharp = false;
+    if(scoreMap[i] == 0xff){
+      ypos = 0;
+    }else{
+      rev = pgm_read_byte(revSpace + ((scoreMap[i]) % 12));
+      sharp = ((rev & 0x80) == 0x80);
+      ypos = 7 * ((scoreMap[i]) / 12) +  (rev & 0x7f) + 1;
+    }
+    if(sharp){
+      arduboy.drawLine(i * XSIZE, (HEIGHT/YSIZE - ypos - 1) * YSIZE - 2, i * XSIZE + XSIZE - 1, (HEIGHT/YSIZE - ypos - 1) * YSIZE - 2, 1);
+    }
+    arduboy.fillRect(i * XSIZE, (HEIGHT/YSIZE - ypos - 1) * YSIZE, XSIZE, YSIZE, 1);
   }
   
-  if(scoreMap[x] != 0){
-    unsigned int note = pgm_read_word(space + scoreMap[x] - 1);
-    unsigned int freq = pgm_read_word(_midi_word_note_frequencies + note);
-    arduboy.tunes.tone(freq,-1);
+  if(scoreMap[x] != 0xff){
+    unsigned int freq = pgm_read_word(_midi_word_note_frequencies + (scoreMap[x]));
+    arduboy.tunes.tone(freq, -1);
   }else{
     arduboy.tunes.stopScore();
   }
@@ -103,14 +132,16 @@ void game(){
   }else{
     keyTrigger = 0;
   }
-  checkA();
-  
+  if(keyTrigger == 1){
+      scoreMap[x] = pgm_read_byte(space + y);
+  }
+    
   if(arduboy.pressed(LEFT_BUTTON)){
     leftTrigger ++;
     if(leftTrigger < 2 || (leftTrigger > 5 && leftTrigger % 5 == 0)){
       x -= 1;
       if(x < 0){ x = 0;}
-      checkA();
+      checkA(0);
     }
   }else{
     leftTrigger = 0;
@@ -120,7 +151,7 @@ void game(){
     if(rightTrigger < 2 || (rightTrigger > 5 && rightTrigger % 5 == 0)){
       x += 1;
       if(x >= WIDTH/XSIZE){ x = WIDTH/XSIZE - 1;}
-      checkA();
+      checkA(0);
     }
   }else{
     rightTrigger = 0;
@@ -128,9 +159,11 @@ void game(){
   if(arduboy.pressed(DOWN_BUTTON)){
     downTrigger ++;
     if(downTrigger < 2 || (downTrigger > 5 && downTrigger % 5 == 0)){
-      y -= 1;
-      if(y < 0){ y = 0;}
-      checkA();
+      checkA(-1);
+      if(keyTrigger == 0){
+        y -= 1;
+        if(y < 0){ y = 0;}
+      }
     }
   }else{
     downTrigger = 0;
@@ -138,9 +171,11 @@ void game(){
   if(arduboy.pressed(UP_BUTTON)){
     upTrigger ++;
     if(upTrigger < 2 || (upTrigger > 5 && upTrigger % 5 == 0)){
-      y += 1;
-      if(y >= HEIGHT/YSIZE){ y = HEIGHT/YSIZE - 1;}
-      checkA();
+      checkA(1);
+      if(keyTrigger == 0){
+        y += 1;
+        if(y >= HEIGHT/YSIZE){ y = HEIGHT/YSIZE - 1;}
+      }
     }
   }else{
     upTrigger = 0;
