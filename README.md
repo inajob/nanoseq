@@ -16,6 +16,20 @@ nanoseq is nano size sequencer for Arduboy ( https://www.arduboy.com/ )
 - Semitone
   - Press A button and Up or Down key.
 
+## how to compile
+
+compile
+
+```
+$ platformio run
+```
+
+compile and upload
+
+```
+$ platformio run --target upload
+```
+
 ## Changelog
 - 2016/09/22
   - support semitone
