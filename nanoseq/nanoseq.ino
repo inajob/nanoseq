@@ -120,6 +120,7 @@ void game(){
     arduboy.fillRect(i * XSIZE, (HEIGHT/YSIZE - ypos - 1) * YSIZE, XSIZE, YSIZE, 1);
   }
   
+  // play tone
   if(scoreMap[x] != 0xff){
     unsigned int freq = pgm_read_word(_midi_word_note_frequencies + (scoreMap[x]));
     arduboy.tunes.tone(freq, -1);
@@ -127,6 +128,7 @@ void game(){
     arduboy.tunes.stopScore();
   }
 
+  // button event
   if(arduboy.pressed(A_BUTTON)){
     keyTrigger ++;
   }else{
