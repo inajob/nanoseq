@@ -31,6 +31,9 @@ $ platformio run --target upload
 ```
 
 ## Changelog
+- 2017/02/19
+  - support platformio
+  - include hex binary
 - 2016/09/22
   - support semitone
 
