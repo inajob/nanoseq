@@ -78,7 +78,7 @@ int downTrigger = 0;
 int leftTrigger = 0;
 int rightTrigger = 0;
 
-void checkA(byte diff){
+void setTone(byte diff){
   if(arduboy.pressed(A_BUTTON)){
       scoreMap[x] = pgm_read_byte(space + y) + diff;
   }
@@ -135,7 +135,7 @@ void game(){
     keyTrigger = 0;
   }
   if(keyTrigger == 1){
-      scoreMap[x] = pgm_read_byte(space + y);
+      setTone(0);
   }
     
   if(arduboy.pressed(LEFT_BUTTON)){
@@ -143,7 +143,7 @@ void game(){
     if(leftTrigger < 2 || (leftTrigger > 5 && leftTrigger % 5 == 0)){
       x -= 1;
       if(x < 0){ x = 0;}
-      checkA(0);
+      setTone(0);
     }
   }else{
     leftTrigger = 0;
@@ -153,7 +153,7 @@ void game(){
     if(rightTrigger < 2 || (rightTrigger > 5 && rightTrigger % 5 == 0)){
       x += 1;
       if(x >= WIDTH/XSIZE){ x = WIDTH/XSIZE - 1;}
-      checkA(0);
+      setTone(0);
     }
   }else{
     rightTrigger = 0;
@@ -161,7 +161,7 @@ void game(){
   if(arduboy.pressed(DOWN_BUTTON)){
     downTrigger ++;
     if(downTrigger < 2 || (downTrigger > 5 && downTrigger % 5 == 0)){
-      checkA(-1);
+      setTone(-1);
       if(keyTrigger == 0){
         y -= 1;
         if(y < 0){ y = 0;}
@@ -173,7 +173,7 @@ void game(){
   if(arduboy.pressed(UP_BUTTON)){
     upTrigger ++;
     if(upTrigger < 2 || (upTrigger > 5 && upTrigger % 5 == 0)){
-      checkA(1);
+      setTone(1);
       if(keyTrigger == 0){
         y += 1;
         if(y >= HEIGHT/YSIZE){ y = HEIGHT/YSIZE - 1;}
